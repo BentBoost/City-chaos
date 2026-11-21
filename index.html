@@ -3,47 +3,54 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CITY CHAOS 0.4 — Police Update</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITY CHAOS 0.5</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;overflow:hidden;background:#080810;color:white;font-family:Arial}
+body{margin:0;background:#080810;color:white;font-family:Arial;overflow:hidden}
 #game{width:100vw;height:100vh;display:block;touch-action:none}
-#hud{position:absolute;top:14px;left:14px;background:#090a12e8;
-border:1px solid #b72c50;border-radius:10px;padding:12px 16px;
-min-width:190px;z-index:5;box-shadow:0 0 20px #b72c5040}
+.panel{position:absolute;background:#090a12e8;border:1px solid #a52b55;
+border-radius:10px;padding:12px;z-index:5}
+#hud{top:12px;left:12px;min-width:190px}
 #title{font-size:21px;font-weight:bold;letter-spacing:2px;color:#ff416d}
 #stats{font-size:13px;line-height:1.8;margin-top:7px}
-#mission{position:absolute;right:14px;top:14px;z-index:5;
-background:#090a12e8;border:1px solid #d6a43a;border-radius:10px;
-padding:12px;width:220px;font-size:13px}
-#message{display:none;position:absolute;top:135px;left:50%;
-transform:translateX(-50%);z-index:8;background:#080810ed;
+#mission{top:12px;right:12px;width:215px;font-size:13px}
+#weaponHud{bottom:12px;left:50%;transform:translateX(-50%);
+min-width:230px;text-align:center}
+#weaponName{font-size:17px;color:#ff416d;font-weight:bold}
+#ammo{font-size:22px;font-weight:bold;margin-top:5px}
+#message{display:none;position:absolute;top:120px;left:50%;
+transform:translateX(-50%);z-index:9;background:#080810ed;
 border:1px solid #ff416d;border-radius:9px;padding:12px 20px;
-text-align:center;max-width:90%;font-size:14px}
-#help{position:absolute;bottom:12px;left:12px;z-index:5;
-background:#080810c9;padding:10px 13px;border-radius:8px;
-font-size:12px;line-height:1.7}
-#mobile{display:none;position:absolute;bottom:18px;right:12px;
-z-index:10;gap:7px;align-items:end}
-.pad{display:grid;grid-template-columns:repeat(3,46px);gap:5px}
-.actions{display:flex;flex-direction:column;gap:5px}
-.mobileBtn{width:46px;height:46px;border:1px solid #ff416d;
-border-radius:10px;background:#17131ddd;color:white;font-size:17px;
-touch-action:none}
-.mobileBtn:active{background:#9d2045}
-#weatherButton{position:absolute;right:14px;bottom:14px;z-index:6;
-background:#111522;border:1px solid #478fc2;color:white;
-padding:10px 13px;border-radius:9px}
-@media(pointer:coarse){#mobile{display:flex}#help{display:none}}
+text-align:center;max-width:90%}
+#help{bottom:12px;right:12px;z-index:5;font-size:11px;
+line-height:1.7;background:#080810c9;padding:10px;border-radius:8px}
+#shop{display:none;position:absolute;left:50%;top:50%;
+transform:translate(-50%,-50%);z-index:15;width:min(340px,90vw);
+background:#10111c;border:1px solid #ff416d;border-radius:12px;padding:18px}
+.shopItem{display:flex;justify-content:space-between;align-items:center;
+gap:8px;border-bottom:1px solid #333;padding:10px 0;font-size:13px}
+.shopItem button,.shopClose{background:#9d2045;color:white;
+border:0;border-radius:6px;padding:8px}
+#mobile{display:none;position:absolute;bottom:90px;right:10px;
+z-index:10;gap:6px}
+#mobile button{background:#17131ddd;color:white;border:1px solid #ff416d;
+border-radius:9px;padding:13px;touch-action:none}
+#crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+font-size:22px;color:#fff;pointer-events:none;z-index:4}
+@media(pointer:coarse){
+#mobile{display:flex;flex-direction:column}
+#help{display:none}
+#weaponHud{bottom:12px;left:12px;transform:none;min-width:170px}
+}
 </style>
 </head>
 <body>
 <canvas id="game"></canvas>
 
-<div id="hud">
+<div id="hud" class="panel">
   <div id="title">CITY CHAOS</div>
-  <div style="font-size:10px;color:#aaa">VERSION 0.4 — POLICE UPDATE</div>
+  <small style="color:#aaa">VERSION 0.5 — WEAPONS UPDATE</small>
   <div id="stats">
     Geld: €<span id="money">500</span><br>
     Voertuig: <span id="vehicle">Te voet</span><br>
@@ -52,42 +59,46 @@ padding:10px 13px;border-radius:9px}
   </div>
 </div>
 
-<div id="mission">
+<div id="mission" class="panel">
   <strong style="color:#ffc34d">STADSMISSIE</strong>
-  <p id="missionText">Bezoek de gele marker bij het centrum.</p>
+  <p id="missionText">Zoek de gele marker in het centrum.</p>
   <small>Beloning: €750</small>
   <hr style="border-color:#444">
-  <small>Druk op F bij een winkel om kleding te kopen.</small>
+  <small>Druk op F bij de wapenwinkel.</small>
 </div>
 
+<div id="weaponHud" class="panel">
+  <div id="weaponName">PISTOOL</div>
+  <div id="ammo">12 / 48</div>
+  <small>1-4 wisselen · R herladen</small>
+</div>
+
+<div id="crosshair">+</div>
 <div id="message"></div>
 
-<div id="help">
-  Z / S — Vooruit / achteruit<br>
-  Q / D — Links / rechts<br>
+<div id="help" class="panel">
+  ZQSD — Bewegen<br>
   SHIFT — Sprinten<br>
-  SPACE — Springen<br>
-  E — Auto in- of uitstappen<br>
-  F — Winkel gebruiken<br>
+  E — Auto in/uit<br>
+  F — Wapenwinkel<br>
+  Muisknop — Schieten<br>
+  R — Herladen<br>
+  1-4 — Wapens wisselen<br>
   V — Camera wisselen<br>
-  R — Weer veranderen
+  T — Weer veranderen
 </div>
 
-<button id="weatherButton">Weer veranderen</button>
+<div id="shop">
+  <h3 style="color:#ff416d">WAPENWINKEL</h3>
+  <p id="shopMoney">Je geld: €500</p>
+  <div id="shopItems"></div>
+  <button class="shopClose" onclick="closeShop()">Winkel sluiten</button>
+</div>
 
 <div id="mobile">
-  <div class="pad">
-    <div></div><button class="mobileBtn" data-key="z">▲</button><div></div>
-    <button class="mobileBtn" data-key="q">◀</button>
-    <button class="mobileBtn" data-key="s">▼</button>
-    <button class="mobileBtn" data-key="d">▶</button>
-  </div>
-  <div class="actions">
-    <button class="mobileBtn" data-action="e">AUTO</button>
-    <button class="mobileBtn" data-action="f">WINKEL</button>
-    <button class="mobileBtn" data-action="v">CAM</button>
-    <button class="mobileBtn" data-action="r">WEER</button>
-  </div>
+  <button id="fireBtn">VUUR</button>
+  <button id="reloadBtn">HERLADEN</button>
+  <button id="shopBtn">WINKEL</button>
 </div>
 
 <script src="https://cdn.babylonjs.com/babylon.js"></script>
@@ -95,637 +106,656 @@ padding:10px 13px;border-radius:9px}
 (() => {
 "use strict";
 
-const canvas = document.getElementById("game");
-const engine = new BABYLON.Engine(canvas,true);
-const scene = new BABYLON.Scene(engine);
+const canvas=document.getElementById("game");
+const engine=new BABYLON.Engine(canvas,true);
+const scene=new BABYLON.Scene(engine);
+scene.clearColor=new BABYLON.Color4(.012,.012,.025,1);
+scene.fogMode=BABYLON.Scene.FOGMODE_EXP2;
+scene.fogDensity=.006;
+scene.fogColor=new BABYLON.Color3(.025,.025,.06);
 
-scene.clearColor = new BABYLON.Color4(.012,.012,.025,1);
-scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
-scene.fogDensity = .006;
-scene.fogColor = new BABYLON.Color3(.025,.025,.06);
+const camera=new BABYLON.FollowCamera(
+ "camera",new BABYLON.Vector3(0,7,-12),scene);
+camera.radius=13;
+camera.heightOffset=5;
+camera.rotationOffset=180;
+camera.cameraAcceleration=.08;
+camera.maxCameraSpeed=10;
+scene.activeCamera=camera;
 
-const camera = new BABYLON.FollowCamera(
-  "camera",new BABYLON.Vector3(0,7,-12),scene
-);
-camera.radius = 13;
-camera.heightOffset = 5;
-camera.rotationOffset = 180;
-camera.cameraAcceleration = .08;
-camera.maxCameraSpeed = 10;
-scene.activeCamera = camera;
-
-const moon = new BABYLON.HemisphericLight(
-  "moon",new BABYLON.Vector3(0,1,0),scene
-);
-moon.intensity = .45;
+const light=new BABYLON.HemisphericLight(
+ "moon",new BABYLON.Vector3(0,1,0),scene);
+light.intensity=.45;
 
 function mat(name,color,glow){
-  const m = new BABYLON.StandardMaterial(name,scene);
-  m.diffuseColor = BABYLON.Color3.FromHexString(color);
-  if(glow)m.emissiveColor = BABYLON.Color3.FromHexString(glow);
-  return m;
+ const m=new BABYLON.StandardMaterial(name,scene);
+ m.diffuseColor=BABYLON.Color3.FromHexString(color);
+ if(glow)m.emissiveColor=BABYLON.Color3.FromHexString(glow);
+ return m;
 }
 function box(name,x,y,z,w,h,d,m){
-  const b = BABYLON.MeshBuilder.CreateBox(name,
-    {width:w,height:h,depth:d},scene);
-  b.position.set(x,y,z);
-  b.material=m;
-  return b;
+ const b=BABYLON.MeshBuilder.CreateBox(name,
+ {width:w,height:h,depth:d},scene);
+ b.position.set(x,y,z);
+ b.material=m;
+ return b;
 }
 
 const asphalt=mat("asphalt","#171821");
 const pavement=mat("pavement","#30303a");
 const building1=mat("building1","#252431");
 const building2=mat("building2","#34303c");
-const windows=mat("windows","#d58b42","#6d3518");
+const windowMat=mat("windows","#d58b42","#6d3518");
 const pink=mat("pink","#ff3479","#ff155b");
 const blue=mat("blue","#29aaff","#0879ff");
 const yellow=mat("yellow","#ffca35","#ffad00");
+const black=mat("black","#08080b");
 const playerMat=mat("player","#35a8ff");
 const carMat=mat("car","#a91e37");
 const policeMat=mat("police","#151a2b");
-const black=mat("black","#08080b");
 
 const ground=BABYLON.MeshBuilder.CreateGround(
-  "ground",{width:240,height:240},scene
-);
+ "ground",{width:240,height:240},scene);
 ground.material=asphalt;
 
-// Wegen en trottoirs
 for(let i=-100;i<=100;i+=40){
-  box("roadX",0,.02,i,240,.05,13,asphalt);
-  box("roadZ",i,.03,0,13,.05,240,asphalt);
-  box("sideX",0,.08,i+8,240,.15,3,pavement);
-  box("sideX2",0,.08,i-8,240,.15,3,pavement);
-  box("sideZ",i+8,.08,0,3,.15,240,pavement);
-  box("sideZ2",i-8,.08,0,3,.15,240,pavement);
+ box("roadX",0,.02,i,240,.05,13,asphalt);
+ box("roadZ",i,.03,0,13,.05,240,asphalt);
+ box("sideX",0,.08,i+8,240,.15,3,pavement);
+ box("sideX2",0,.08,i-8,240,.15,3,pavement);
+ box("sideZ",i+8,.08,0,3,.15,240,pavement);
+ box("sideZ2",i-8,.08,0,3,.15,240,pavement);
 }
 
-// Straatstrepen
-const roadLine=mat("roadLine","#c9b98b");
-for(let i=-100;i<=100;i+=40){
-  for(let n=-110;n<=110;n+=12){
-    box("line",n,.07,i,4,.025,.15,roadLine);
-    box("line",i,.07,n,.15,.025,4,roadLine);
-  }
-}
-
-// Gebouwen
 let seed=77;
 function random(){
-  seed=(seed*16807)%2147483647;
-  return (seed-1)/2147483646;
-}
-for(let x=-90;x<=90;x+=40){
-  for(let z=-90;z<=90;z+=40){
-    if(Math.abs(x)<18&&Math.abs(z)<18)continue;
-    for(const sx of [-1,1]){
-      for(const sz of [-1,1]){
-        const bx=x+sx*(12+random()*3);
-        const bz=z+sz*(12+random()*3);
-        const w=10+random()*5;
-        const d=10+random()*5;
-        const h=12+random()*35;
-        box("building",bx,h/2,bz,w,h,d,
-          random()>.5?building1:building2);
-        for(let floor=3;floor<h-2;floor+=4){
-          for(let win=-1;win<=1;win++){
-            if(random()>.35){
-              box("window",bx+win*2.5,floor,bz-d/2-.05,
-                1.1,1.4,.08,random()>.5?windows:blue);
-            }
-          }
-        }
-      }
-    }
-  }
+ seed=(seed*16807)%2147483647;
+ return (seed-1)/2147483646;
 }
 
-// Neonborden
+for(let x=-90;x<=90;x+=40){
+ for(let z=-90;z<=90;z+=40){
+  if(Math.abs(x)<18&&Math.abs(z)<18)continue;
+  for(const sx of [-1,1]){
+   for(const sz of [-1,1]){
+    const bx=x+sx*(12+random()*3);
+    const bz=z+sz*(12+random()*3);
+    const w=10+random()*5,d=10+random()*5,h=12+random()*35;
+    box("building",bx,h/2,bz,w,h,d,
+      random()>.5?building1:building2);
+    for(let floor=3;floor<h-2;floor+=4){
+     for(let win=-1;win<=1;win++){
+      if(random()>.35)
+       box("window",bx+win*2.5,floor,bz-d/2-.05,
+       1.1,1.4,.08,random()>.5?windowMat:blue);
+     }
+    }
+   }
+  }
+ }
+}
+
 function sign(x,y,z,label,glow){
-  box("sign",x,y,z,7,2,.3,glow);
-  const plane=BABYLON.MeshBuilder.CreatePlane(
-    "signText",{width:6.5,height:1.5},scene);
-  plane.position.set(x,y,z-.18);
-  const tex=new BABYLON.DynamicTexture(
-    "signTexture",{width:512,height:128},scene);
-  tex.drawText(label,null,88,"bold 58px Arial",
-    "white","#111018",true);
-  const m=new BABYLON.StandardMaterial("signMat",scene);
-  m.diffuseTexture=tex;
-  m.emissiveTexture=tex;
-  plane.material=m;
+ box("sign",x,y,z,7,2,.3,glow);
+ const plane=BABYLON.MeshBuilder.CreatePlane(
+ "signText",{width:6.5,height:1.5},scene);
+ plane.position.set(x,y,z-.18);
+ const tex=new BABYLON.DynamicTexture(
+ "signTexture",{width:512,height:128},scene);
+ tex.drawText(label,null,88,"bold 58px Arial","white","#111018",true);
+ const m=new BABYLON.StandardMaterial("signMat",scene);
+ m.diffuseTexture=tex;m.emissiveTexture=tex;plane.material=m;
 }
 sign(9,7,5,"NIGHT CLUB",pink);
 sign(-9,7,-5,"24 / 7",blue);
 
-// Straatlantaarns
-const lamp=mat("lamp","#ffdb9a","#ffbd65");
-for(let i=-100;i<=100;i+=40){
-  for(const side of [-1,1]){
-    const x=i+side*11;
-    box("lampPost",x,3,0,.18,6,.18,building2);
-    box("lampHead",x,6,0,1.1,.25,.5,lamp);
-  }
-}
-
 // Auto's
 function makeCar(name,x,z,bodyMat){
-  const root=new BABYLON.TransformNode(name,scene);
-  const body=box(name+"Body",0,.8,0,2.2,.8,4.2,bodyMat);
-  body.parent=root;
-  const roof=box(name+"Roof",0,1.5,-.2,1.7,.8,2,building2);
-  roof.parent=root;
-  const wheelMat=mat(name+"WheelMat","#08080b");
-  for(const wx of [-1,1]){
-    for(const wz of [-1.35,1.35]){
-      const wheel=BABYLON.MeshBuilder.CreateCylinder(
-        name+"Wheel",{diameter:.75,height:.25,tessellation:12},scene);
-      wheel.rotation.z=Math.PI/2;
-      wheel.position.set(wx*1.08,.45,wz);
-      wheel.material=wheelMat;
-      wheel.parent=root;
-    }
+ const root=new BABYLON.TransformNode(name,scene);
+ const body=box(name+"Body",0,.8,0,2.2,.8,4.2,bodyMat);
+ body.parent=root;
+ const roof=box(name+"Roof",0,1.5,-.2,1.7,.8,2,building2);
+ roof.parent=root;
+ const wm=mat(name+"Wheel","#08080b");
+ for(const wx of [-1,1]){
+  for(const wz of [-1.35,1.35]){
+   const wheel=BABYLON.MeshBuilder.CreateCylinder(
+   name+"Wheel",{diameter:.75,height:.25,tessellation:12},scene);
+   wheel.rotation.z=Math.PI/2;
+   wheel.position.set(wx*1.08,.45,wz);
+   wheel.material=wm;wheel.parent=root;
   }
-  root.position.set(x,0,z);
-  return root;
+ }
+ root.position.set(x,0,z);
+ return root;
 }
 
 const car=makeCar("playerCar",5,3,carMat);
 const traffic=[];
-for(let i=0;i<5;i++){
-  traffic.push(makeCar("traffic"+i,
-    -80+i*30,10+i*40,
-    mat("trafficMat"+i,["#77717a","#254b70","#6d2935","#66604c","#35604d"][i])));
-}
+for(let i=0;i<5;i++)
+ traffic.push(makeCar("traffic"+i,-80+i*30,10+i*35,
+ mat("trafficMat"+i,["#77717a","#254b70","#6d2935","#66604c","#35604d"][i])));
 
-// Politieauto's
 const policeCars=[];
 for(let i=0;i<5;i++){
-  const p=makeCar("police"+i,40+i*5,40,policeMat);
-  const red=box("redLight",-.4,2,0,.55,.2,.4,pink);
-  red.parent=p;
-  const blueLight=box("blueLight",.4,2,0,.55,.2,.4,blue);
-  blueLight.parent=p;
-  p.setEnabled(false);
-  policeCars.push(p);
+ const p=makeCar("police"+i,40+i*5,40,policeMat);
+ const red=box("redLight",-.4,2,0,.55,.2,.4,pink);
+ red.parent=p;
+ const b=box("blueLight",.4,2,0,.55,.2,.4,blue);
+ b.parent=p;
+ p.setEnabled(false);
+ policeCars.push(p);
 }
 
-// Speler
 const player=BABYLON.MeshBuilder.CreateCapsule(
-  "player",{height:2,radius:.45},scene);
+ "player",{height:2,radius:.45},scene);
 player.position.set(0,1,0);
 player.material=playerMat;
 camera.lockedTarget=player;
 
-// Winkels
-const shops=[
-  {x:18,z:8,name:"CLOTHING",price:100},
-  {x:-18,z:-8,name:"CITY STORE",price:150}
-];
-const shopMarkers=[];
-shops.forEach((s,i)=>{
-  box("shopBuilding",s.x,3,s.z,9,6,7,
-    i===0?building2:building1);
-  const marker=box("shopMarker",s.x,6.5,s.z-3.7,6,1.5,.2,
-    i===0?pink:blue);
-  shopMarkers.push(marker);
-});
+// Voetgangers met eenvoudige levenspunten voor de spelwereld
+const npcs=[];
+for(let i=0;i<18;i++){
+ const npc=BABYLON.MeshBuilder.CreateCapsule(
+ "pedestrian",{height:1.8,radius:.35},scene);
+ npc.position.set(-70+random()*140,.9,-70+random()*140);
+ npc.material=mat("npcMat"+i,
+ ["#a36c4d","#6b8b9d","#8874a5","#b0a37a"][i%4]);
+ npcs.push({mesh:npc,angle:random()*6.28,
+ speed:.7+random()*1.2,active:true});
+}
 
-// Missie
+// Winkel en missie
+const shopX=18,shopZ=8;
+box("weaponShop",shopX,3,shopZ,9,6,7,building2);
+box("shopSign",shopX,6.5,shopZ-3.7,6,1.5,.2,pink);
+
 const missionMarker=BABYLON.MeshBuilder.CreateCylinder(
-  "mission",{diameter:2.5,height:.15,tessellation:32},scene);
+ "mission",{diameter:2.5,height:.15},scene);
 missionMarker.position.set(25,.2,25);
 missionMarker.material=yellow;
+
 const missionRing=BABYLON.MeshBuilder.CreateTorus(
-  "missionRing",{diameter:3.2,thickness:.12},scene);
+ "missionRing",{diameter:3.2,thickness:.12},scene);
 missionRing.position.set(25,.3,25);
 missionRing.material=pink;
 
-// NPC's
-const npcs=[];
-for(let i=0;i<18;i++){
-  const npc=BABYLON.MeshBuilder.CreateCapsule(
-    "pedestrian",{height:1.8,radius:.35},scene);
-  npc.position.set(-70+random()*140,.9,-70+random()*140);
-  npc.material=mat("npcMat"+i,
-    ["#a36c4d","#6b8b9d","#8874a5","#b0a37a"][i%4]);
-  npcs.push({
-    mesh:npc,angle:random()*Math.PI*2,
-    speed:.7+random()*1.2
-  });
-}
-
-// Regen: eenvoudige bewegende regendruppels
-const rain=[];
+// Regen
 const rainMat=mat("rainMat","#8dbbdf","#527da3");
-for(let i=0;i<120;i++){
-  const drop=box("raindrop",0,0,0,.025,1.2,.025,rainMat);
-  drop.setEnabled(false);
-  rain.push(drop);
+const rain=[];
+for(let i=0;i<100;i++){
+ const d=box("raindrop",0,0,0,.025,1.2,.025,rainMat);
+ d.setEnabled(false);rain.push(d);
 }
 
-// Spelstatus
-const keys={};
+// Wapensysteem: fictieve spelstatistieken
+const weapons=[
+ {name:"PISTOOL",capacity:12,ammo:12,reserve:48,
+  damage:25,delay:.35,price:0,reload:1.2},
+ {name:"SHOTGUN",capacity:6,ammo:6,reserve:24,
+  damage:55,delay:.9,price:700,reload:1.8},
+ {name:"GEWEER",capacity:30,ammo:30,reserve:90,
+  damage:20,delay:.12,price:1500,reload:1.7},
+ {name:"SNIPER",capacity:5,ammo:5,reserve:20,
+  damage:100,delay:1.2,price:2200,reload:2.2}
+];
+
+let selectedWeapon=0;
 let money=500;
 let wanted=0;
 let inCar=false;
 let firstPerson=false;
-let jumpVelocity=0;
-let carSpeed=0;
 let missionDone=false;
 let weatherMode=0;
-let policeActive=false;
-let wantedTime=0;
+let carSpeed=0;
+let jumpVelocity=0;
+let lastShot=0;
+let reloading=false;
+let reloadTimer=0;
+let weaponCooldown=0;
+let messageTimer=0;
 let hiddenTime=0;
 let catchTime=0;
-let hitCooldown=0;
-let messageTimer=0;
+let wantedTime=0;
 let clothingStyle=0;
-
-const weatherNames=["Nacht","Regen","Mist"];
-const weatherButton=document.getElementById("weatherButton");
+let shopOpen=false;
+let recoil=0;
+const keys={};
 
 function say(text){
-  const el=document.getElementById("message");
-  el.textContent=text;
-  el.style.display="block";
-  messageTimer=3;
+ const el=document.getElementById("message");
+ el.textContent=text;el.style.display="block";messageTimer=3;
 }
+function target(){return inCar?car:player;}
+function dist(a,b){return BABYLON.Vector3.Distance(a.position,b.position);}
 function updateHUD(){
-  document.getElementById("money").textContent=money;
-  document.getElementById("vehicle").textContent=inCar?"Auto":"Te voet";
-  document.getElementById("wanted").textContent=
-    "★".repeat(wanted)+"☆".repeat(5-wanted);
-  document.getElementById("weather").textContent=weatherNames[weatherMode];
+ document.getElementById("money").textContent=money;
+ document.getElementById("vehicle").textContent=inCar?"Auto":"Te voet";
+ document.getElementById("wanted").textContent=
+ "★".repeat(wanted)+"☆".repeat(5-wanted);
+ document.getElementById("weather").textContent=
+ ["Nacht","Regen","Mist"][weatherMode];
+ const w=weapons[selectedWeapon];
+ document.getElementById("weaponName").textContent=w.name;
+ document.getElementById("ammo").textContent=
+ w.ammo+" / "+w.reserve+(reloading?" — HERLADEN":"");
 }
-function target(){
-  return inCar?car:player;
+function clamp(mesh){
+ mesh.position.x=BABYLON.Scalar.Clamp(mesh.position.x,-112,112);
+ mesh.position.z=BABYLON.Scalar.Clamp(mesh.position.z,-112,112);
 }
-function distance(a,b){
-  return BABYLON.Vector3.Distance(a.position,b.position);
+
+// Eenvoudig zichtbaar wapenmodel in de camera
+const weaponRoot=new BABYLON.TransformNode("weaponRoot",scene);
+weaponRoot.parent=camera;
+weaponRoot.position.set(.55,-.45,1.15);
+
+const weaponBody=box("weaponBody",0,0,0,.18,.18,.65,black);
+weaponBody.parent=weaponRoot;
+const weaponGrip=box("weaponGrip",0,-.16,.16,.13,.3,.18,building2);
+weaponGrip.parent=weaponRoot;
+const muzzle=box("muzzle",0,0,.38,.11,.11,.2,black);
+muzzle.parent=weaponRoot;
+
+const flash=BABYLON.MeshBuilder.CreateSphere(
+ "muzzleFlash",{diameter:.28,segments:8},scene);
+flash.parent=weaponRoot;
+flash.position.set(0,0,.58);
+flash.material=mat("flashMat","#ffdc6b","#ff9d00");
+flash.setEnabled(false);
+
+// Inventaris
+function switchWeapon(index){
+ if(index<0||index>=weapons.length)return;
+ if(index>0&&weapons[index].price>0&&weapons[index].ammo===0&&
+ weapons[index].reserve===0){
+  say("Koop dit wapen eerst in de winkel.");
+  return;
+ }
+ selectedWeapon=index;
+ reloading=false;
+ updateHUD();
+ say(weapons[index].name+" geselecteerd");
 }
-function clampWorld(mesh){
-  mesh.position.x=BABYLON.Scalar.Clamp(mesh.position.x,-112,112);
-  mesh.position.z=BABYLON.Scalar.Clamp(mesh.position.z,-112,112);
+function reloadWeapon(){
+ const w=weapons[selectedWeapon];
+ if(reloading||w.ammo===w.capacity||w.reserve<=0){
+  if(w.reserve<=0)say("Geen reserve-munitie!");
+  return;
+ }
+ reloading=true;
+ reloadTimer=w.reload;
+ say("Herladen...");
+ updateHUD();
+}
+
+// Winkel
+function openShop(){
+ shopOpen=true;
+ document.getElementById("shop").style.display="block";
+ document.getElementById("shopMoney").textContent="Je geld: €"+money;
+ renderShop();
+}
+function closeShop(){
+ shopOpen=false;
+ document.getElementById("shop").style.display="none";
+}
+window.closeShop=closeShop;
+
+function renderShop(){
+ const el=document.getElementById("shopItems");
+ el.innerHTML="";
+ weapons.forEach((w,i)=>{
+  const row=document.createElement("div");
+  row.className="shopItem";
+  const info=document.createElement("span");
+  info.textContent=(i+1)+". "+w.name+" — €"+w.price;
+  const button=document.createElement("button");
+  button.textContent=i===0?"START":(w.price===0?"GRATIS":"KOPEN");
+  button.disabled=i===0||weapons[i].price>money;
+  button.onclick=()=>buyWeapon(i);
+  row.append(info,button);el.appendChild(row);
+ });
+}
+function buyWeapon(i){
+ const w=weapons[i];
+ if(i===0)return;
+ if(w.price>money){say("Niet genoeg geld!");return;}
+ if(w.reserve>0||w.ammo===w.capacity){
+  say("Je bezit dit wapen al.");
+  return;
+ }
+ money-=w.price;
+ w.ammo=w.capacity;
+ w.reserve=w.capacity*2;
+ say(w.name+" gekocht!");
+ switchWeapon(i);
+ updateHUD();
+ document.getElementById("shopMoney").textContent="Je geld: €"+money;
+ renderShop();
+}
+
+function useShop(){
+ if(dist(target(),new BABYLON.Vector3(shopX,0,shopZ))<9){
+  openShop();
+ }else{
+  say("Ga naar de wapenwinkel.");
+ }
 }
 
 // Besturing
 window.addEventListener("keydown",e=>{
-  const k=e.key.toLowerCase();
-  keys[k]=true;
-  if([" ","arrowup","arrowdown","arrowleft","arrowright"].includes(k))
-    e.preventDefault();
-  if(k==="e"&&!e.repeat)toggleCar();
-  if(k==="f"&&!e.repeat)useShop();
-  if(k==="v"&&!e.repeat)toggleCamera();
-  if(k==="r"&&!e.repeat)changeWeather();
-  if(k===" "&&!e.repeat&&!inCar&&player.position.y<=1.05)
-    jumpVelocity=8;
+ const k=e.key.toLowerCase();
+ keys[k]=true;
+ if([" ","arrowup","arrowdown","arrowleft","arrowright"].includes(k))
+  e.preventDefault();
+ if(e.repeat)return;
+ if(k==="e")toggleCar();
+ if(k==="f")useShop();
+ if(k==="v")toggleCamera();
+ if(k==="t")changeWeather();
+ if(k==="r")reloadWeapon();
+ if(k==="1")switchWeapon(0);
+ if(k==="2")switchWeapon(1);
+ if(k==="3")switchWeapon(2);
+ if(k==="4")switchWeapon(3);
+ if(k===" "&&!inCar&&player.position.y<=1.05)jumpVelocity=8;
 });
-window.addEventListener("keyup",e=>{
-  keys[e.key.toLowerCase()]=false;
-});
+window.addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
 
-document.querySelectorAll(".mobileBtn").forEach(btn=>{
-  const key=btn.dataset.key;
-  const action=btn.dataset.action;
-  btn.addEventListener("pointerdown",e=>{
-    e.preventDefault();
-    if(action==="e")toggleCar();
-    else if(action==="f")useShop();
-    else if(action==="v")toggleCamera();
-    else if(action==="r")changeWeather();
-    else if(key)keys[key]=true;
-  });
-  ["pointerup","pointerleave","pointercancel"].forEach(type=>{
-    btn.addEventListener(type,()=>{if(key)keys[key]=false;});
-  });
+document.querySelectorAll("#mobile button").forEach(btn=>{
+ btn.addEventListener("click",()=>{
+  if(btn.id==="fireBtn")shoot();
+  if(btn.id==="reloadBtn")reloadWeapon();
+  if(btn.id==="shopBtn")useShop();
+ });
 });
 
 function toggleCamera(){
-  firstPerson=!firstPerson;
-  camera.radius=firstPerson?.4:13;
-  camera.heightOffset=firstPerson?1.6:5;
-  say(firstPerson?"Eerste persoon":"Derde persoon");
+ firstPerson=!firstPerson;
+ camera.radius=firstPerson?.4:13;
+ camera.heightOffset=firstPerson?1.6:5;
+ say(firstPerson?"Eerste persoon":"Derde persoon");
 }
-
 function toggleCar(){
-  if(!inCar){
-    if(distance(player,car)<5){
-      inCar=true;
-      player.setEnabled(false);
-      say("Je bent ingestapt!");
-    }else{
-      say("Ga dichter bij je auto staan.");
-    }
-  }else{
-    inCar=false;
-    player.setEnabled(true);
-    player.position.copyFrom(car.position);
-    player.position.x+=3;
-    say("Je bent uitgestapt.");
-  }
-  updateHUD();
-}
-
-function useShop(){
-  const s=shops.find(shop=>
-    BABYLON.Vector3.Distance(
-      target().position,new BABYLON.Vector3(shop.x,0,shop.z)
-    )<8
-  );
-  if(!s){
-    say("Ga dichter bij een winkel staan.");
-    return;
-  }
-  if(money<s.price){
-    say("Je hebt niet genoeg geld!");
-    return;
-  }
-  money-=s.price;
-  clothingStyle++;
-  const colors=["#35a8ff","#a42d50","#42a66b","#d4a63c","#9d72d1"];
-  player.material=mat("clothing"+clothingStyle,
-    colors[clothingStyle%colors.length]);
-  say("Nieuwe outfit gekocht! -€"+s.price);
-  updateHUD();
+ if(!inCar){
+  if(dist(player,car)<5){
+   inCar=true;player.setEnabled(false);say("Je bent ingestapt!");
+  }else say("Ga dichter bij je auto staan.");
+ }else{
+  inCar=false;player.setEnabled(true);
+  player.position.copyFrom(car.position);
+  player.position.x+=3;say("Je bent uitgestapt.");
+ }
+ updateHUD();
 }
 
 // Weer
 function changeWeather(){
-  weatherMode=(weatherMode+1)%3;
-  if(weatherMode===0){
-    scene.fogDensity=.006;
-    scene.fogColor=new BABYLON.Color3(.025,.025,.06);
-    rain.forEach(d=>d.setEnabled(false));
-    moon.intensity=.45;
-  }else if(weatherMode===1){
-    scene.fogDensity=.012;
-    scene.fogColor=new BABYLON.Color3(.035,.045,.065);
-    rain.forEach(d=>d.setEnabled(true));
-    moon.intensity=.3;
-  }else{
-    scene.fogDensity=.025;
-    scene.fogColor=new BABYLON.Color3(.10,.10,.13);
-    rain.forEach(d=>d.setEnabled(false));
-    moon.intensity=.22;
-  }
-  updateHUD();
-  say("Weer: "+weatherNames[weatherMode]);
+ weatherMode=(weatherMode+1)%3;
+ if(weatherMode===0){
+  scene.fogDensity=.006;
+  scene.fogColor=new BABYLON.Color3(.025,.025,.06);
+  rain.forEach(d=>d.setEnabled(false));
+  light.intensity=.45;
+ }else if(weatherMode===1){
+  scene.fogDensity=.012;
+  scene.fogColor=new BABYLON.Color3(.035,.045,.065);
+  rain.forEach(d=>d.setEnabled(true));
+  light.intensity=.3;
+ }else{
+  scene.fogDensity=.025;
+  scene.fogColor=new BABYLON.Color3(.10,.10,.13);
+  rain.forEach(d=>d.setEnabled(false));
+  light.intensity=.22;
+ }
+ updateHUD();say("Weer: "+["Nacht","Regen","Mist"][weatherMode]);
 }
-weatherButton.addEventListener("click",changeWeather);
-
 function updateRain(dt){
-  if(weatherMode!==1)return;
-  const t=target().position;
-  rain.forEach(drop=>{
-    if(!drop.isEnabled())return;
-    drop.position.y-=24*dt;
-    drop.position.x+=2*dt;
-    if(drop.position.y<0){
-      drop.position.set(t.x-30+random()*60,18+random()*12,
-        t.z-30+random()*60);
-    }
-  });
-}
-
-function increaseWanted(amount){
-  wanted=Math.min(5,wanted+amount);
-  wantedTime=0;
-  hiddenTime=0;
-  policeActive=true;
-  say("POLITIE ALERT! Wanted level: "+wanted);
-  updateHUD();
-}
-
-// Speler bewegen
-function updatePlayer(dt){
-  if(inCar)return;
-  let forward=0,side=0;
-  if(keys.z)forward++;
-  if(keys.s)forward--;
-  if(keys.d)side++;
-  if(keys.q)side--;
-
-  const dir=new BABYLON.Vector3(side,0,forward);
-  if(dir.length()>0){
-    dir.normalize();
-    const speed=keys.shift?13:8;
-    player.position.addInPlace(dir.scale(speed*dt));
-    player.rotation.y=Math.atan2(dir.x,dir.z);
+ if(weatherMode!==1)return;
+ const t=target().position;
+ rain.forEach(d=>{
+  d.position.y-=24*dt;
+  d.position.x+=2*dt;
+  if(d.position.y<0){
+   d.position.set(t.x-30+random()*60,18+random()*12,
+    t.z-30+random()*60);
   }
-  jumpVelocity-=18*dt;
-  player.position.y+=jumpVelocity*dt;
-  if(player.position.y<1){
-    player.position.y=1;
-    jumpVelocity=0;
+ });
+}
+
+// Schieten: raycasting binnen de gamewereld
+function shoot(){
+ if(shopOpen||inCar)return;
+ const now=performance.now()/1000;
+ const w=weapons[selectedWeapon];
+ if(now-lastShot<w.delay||reloading)return;
+ lastShot=now;
+
+ if(w.ammo<=0){
+  say("Geen munitie! Druk op R om te herladen.");
+  return;
+ }
+ w.ammo--;
+ recoil=.12;
+ flash.setEnabled(true);
+ setTimeout(()=>flash.setEnabled(false),75);
+
+ // De camera bepaalt de richting van het schot.
+ const origin=camera.position.clone();
+ const direction=camera.getForwardRay().direction;
+ const ray=new BABYLON.Ray(origin,direction,100);
+ const targets=npcs.filter(n=>n.active).map(n=>n.mesh)
+  .concat(policeCars.filter(p=>p.isEnabled()));
+ const hit=scene.pickWithRay(ray,m=>targets.includes(m));
+
+ if(hit&&hit.hit&&hit.pickedMesh){
+  const npc=npcs.find(n=>n.mesh===hit.pickedMesh);
+  if(npc){
+   npc.active=false;
+   npc.mesh.setEnabled(false);
+   say("Doel geraakt.");
+  }else{
+   say("Politievoertuig geraakt.");
   }
-  clampWorld(player);
+ }else{
+  say("Schot gelost.");
+ }
+
+ // Schieten trekt aandacht van de politie.
+ increaseWanted(1);
+ updateHUD();
 }
-
-// Auto rijden
-function updateCar(dt){
-  if(!inCar)return;
-  if(keys.z)carSpeed+=19*dt;
-  else if(keys.s)carSpeed-=19*dt;
-  else carSpeed*=Math.pow(.94,dt*60);
-
-  carSpeed=BABYLON.Scalar.Clamp(carSpeed,-12,28);
-  const turn=(keys.d?1:0)-(keys.q?1:0);
-  car.rotation.y+=turn*dt*Math.min(2.2,Math.abs(carSpeed)*.12);
-
-  const dir=new BABYLON.Vector3(
-    Math.sin(car.rotation.y),0,Math.cos(car.rotation.y));
-  car.position.addInPlace(dir.scale(carSpeed*dt));
-  clampWorld(car);
-}
-
-// Verkeer
-function updateTraffic(dt){
-  traffic.forEach((v,i)=>{
-    v.position.x+=(i%2===0?1:-1)*4*dt;
-    if(v.position.x>110)v.position.x=-110;
-    if(v.position.x< -110)v.position.x=110;
-  });
-}
-
-// Voetgangers
-function updateNPCs(dt){
-  for(const npc of npcs){
-    npc.angle+=(random()-.5)*dt*.7;
-    npc.mesh.position.x+=Math.sin(npc.angle)*npc.speed*dt;
-    npc.mesh.position.z+=Math.cos(npc.angle)*npc.speed*dt;
-    if(Math.abs(npc.mesh.position.x)>105||
-       Math.abs(npc.mesh.position.z)>105)npc.angle+=Math.PI;
-    npc.mesh.rotation.y=npc.angle;
-  }
-}
-
-// Botsing met voetgangers: verhoogt wanted level
-function checkNPCs(dt){
-  hitCooldown=Math.max(0,hitCooldown-dt);
-  if(hitCooldown>0)return;
-  const t=target();
-  if(inCar&&Math.abs(carSpeed)>5){
-    for(const npc of npcs){
-      if(distance(t,npc.mesh)<1.8){
-        increaseWanted(1);
-        hitCooldown=4;
-        npc.mesh.position.x+=15;
-        npc.mesh.position.z+=15;
-        break;
-      }
-    }
-  }
-}
+canvas.addEventListener("pointerdown",e=>{
+ if(e.button===0)shoot();
+});
 
 // Politie
+function increaseWanted(amount){
+ wanted=Math.min(5,wanted+amount);
+ wantedTime=0;hiddenTime=0;
+ say("POLITIE ALERT! Wanted level: "+wanted);
+ updateHUD();
+}
 function activatePolice(){
-  if(wanted<=0)return;
-  policeActive=true;
-  policeCars.forEach((p,i)=>{
-    if(i<wanted){
-      p.setEnabled(true);
-      if(p.position.x===40&&p.position.z===40){
-        p.position.set(
-          target().position.x-15-i*4,0,
-          target().position.z-20-i*3
-        );
-      }
-    }else{
-      p.setEnabled(false);
-    }
-  });
+ if(wanted<=0){
+  policeCars.forEach(p=>p.setEnabled(false));
+  return;
+ }
+ const t=target();
+ policeCars.forEach((p,i)=>{
+  if(i>=wanted){p.setEnabled(false);return;}
+  if(!p.isEnabled()){
+   p.position.set(t.position.x-18-i*4,0,t.position.z-20-i*3);
+   p.setEnabled(true);
+  }
+ });
+}
+function updatePolice(dt){
+ if(wanted<=0)return;
+ wantedTime+=dt;
+ const t=target();
+ let nearest=999;
+ policeCars.forEach((p,i)=>{
+  if(i>=wanted||!p.isEnabled())return;
+  const dir=t.position.subtract(p.position);
+  dir.y=0;
+  const d=dir.length();
+  nearest=Math.min(nearest,d);
+  if(d>2){
+   dir.normalize();
+   p.position.addInPlace(dir.scale((7+wanted)*dt));
+   p.rotation.y=Math.atan2(dir.x,dir.z);
+  }
+  if(d<3.5)catchTime+=dt;
+ });
+ if(nearest>55)hiddenTime+=dt;
+ else hiddenTime=0;
+
+ if(hiddenTime>18){
+  wanted=0;hiddenTime=0;wantedTime=0;
+  policeCars.forEach(p=>p.setEnabled(false));
+  say("Je bent ontsnapt aan de politie!");
+  updateHUD();return;
+ }
+ if(wantedTime>50&&wanted<5){
+  wanted++;
+  wantedTime=0;
+  say("Politie versterking!");
+  updateHUD();
+ }
+ if(catchTime>3){
+  money=Math.max(0,money-100);
+  wanted=0;catchTime=0;hiddenTime=0;
+  policeCars.forEach(p=>p.setEnabled(false));
+  if(inCar)car.position.set(0,0,0);
+  else player.position.set(0,1,0);
+  say("Je bent gepakt! Boete: €100.");
+  updateHUD();
+ }
 }
 
-function updatePolice(dt){
-  if(wanted<=0){
-    policeCars.forEach(p=>p.setEnabled(false));
-    policeActive=false;
-    return;
-  }
-  wantedTime+=dt;
-  const t=target();
-  let nearest=999;
-  policeCars.forEach((p,i)=>{
-    if(i>=wanted){p.setEnabled(false);return;}
-    if(!p.isEnabled())p.setEnabled(true);
-
-    const dir=t.position.subtract(p.position);
-    dir.y=0;
-    const d=dir.length();
-    nearest=Math.min(nearest,d);
-
-    if(d>2){
-      dir.normalize();
-      const speed=8+wanted*1.4;
-      p.position.addInPlace(dir.scale(speed*dt));
-      p.rotation.y=Math.atan2(dir.x,dir.z);
-    }
-    if(d<3.5){
-      catchTime+=dt;
-    }
-  });
-
-  if(nearest>60)hiddenTime+=dt;
-  else hiddenTime=0;
-
-  // Ontsnappen: lang genoeg uit de buurt van de politie blijven
-  if(hiddenTime>18){
-    wanted=0;
-    hiddenTime=0;
-    wantedTime=0;
-    say("Je bent ontsnapt aan de politie!");
-    policeCars.forEach(p=>p.setEnabled(false));
-    updateHUD();
-    return;
-  }
-
-  // Politie krijgt na verloop van tijd versterking
-  if(wantedTime>45&&wanted<5){
-    wanted++;
-    wantedTime=0;
-    say("Politie versterking! Wanted level verhoogd.");
-    updateHUD();
-  }
-
-  // Gepakt worden
-  if(catchTime>2.5){
-    money=Math.max(0,money-100);
-    wanted=0;
-    catchTime=0;
-    hiddenTime=0;
-    policeCars.forEach(p=>p.setEnabled(false));
-    target().position.set(0,0,0);
-    if(inCar)car.position.set(0,0,0);
-    say("Je bent gepakt! Je betaalt €100 boete.");
-    updateHUD();
-  }
+// Speler en voertuigen
+function updatePlayer(dt){
+ if(inCar)return;
+ let forward=0,side=0;
+ if(keys.z)forward++;
+ if(keys.s)forward--;
+ if(keys.d)side++;
+ if(keys.q)side--;
+ const dir=new BABYLON.Vector3(side,0,forward);
+ if(dir.length()>0){
+  dir.normalize();
+  player.position.addInPlace(dir.scale((keys.shift?13:8)*dt));
+  player.rotation.y=Math.atan2(dir.x,dir.z);
+ }
+ jumpVelocity-=18*dt;
+ player.position.y+=jumpVelocity*dt;
+ if(player.position.y<1){player.position.y=1;jumpVelocity=0;}
+ clamp(player);
+}
+function updateCar(dt){
+ if(!inCar)return;
+ if(keys.z)carSpeed+=19*dt;
+ else if(keys.s)carSpeed-=19*dt;
+ else carSpeed*=Math.pow(.94,dt*60);
+ carSpeed=BABYLON.Scalar.Clamp(carSpeed,-12,28);
+ const turn=(keys.d?1:0)-(keys.q?1:0);
+ car.rotation.y+=turn*dt*Math.min(2.2,Math.abs(carSpeed)*.12);
+ car.position.addInPlace(new BABYLON.Vector3(
+ Math.sin(car.rotation.y),0,Math.cos(car.rotation.y)
+ ).scale(carSpeed*dt));
+ clamp(car);
+}
+function updateTraffic(dt){
+ traffic.forEach((v,i)=>{
+  v.position.x+=(i%2===0?1:-1)*4*dt;
+  if(v.position.x>110)v.position.x=-110;
+  if(v.position.x< -110)v.position.x=110;
+ });
+}
+function updateNPCs(dt){
+ npcs.forEach(n=>{
+  if(!n.active)return;
+  n.angle+=(random()-.5)*dt*.7;
+  n.mesh.position.x+=Math.sin(n.angle)*n.speed*dt;
+  n.mesh.position.z+=Math.cos(n.angle)*n.speed*dt;
+  if(Math.abs(n.mesh.position.x)>105||
+     Math.abs(n.mesh.position.z)>105)n.angle+=Math.PI;
+  n.mesh.rotation.y=n.angle;
+ });
 }
 
 // Missie
 function updateMission(){
-  if(missionDone)return;
-  if(distance(target(),missionMarker)<4){
-    missionDone=true;
-    missionMarker.setEnabled(false);
-    missionRing.setEnabled(false);
-    money+=750;
-    document.getElementById("missionText").textContent=
-      "Missie voltooid! Je hebt €750 verdiend.";
-    say("MISSIE VOLTOOID! +€750");
-    updateHUD();
-  }
+ if(missionDone)return;
+ if(dist(target(),missionMarker)<4){
+  missionDone=true;
+  missionMarker.setEnabled(false);
+  missionRing.setEnabled(false);
+  money+=750;
+  document.getElementById("missionText").textContent=
+   "Missie voltooid! Je hebt €750 verdiend.";
+  say("MISSIE VOLTOOID! +€750");
+  updateHUD();
+ }
 }
 
-// Hoofdloop
-let lastTime=performance.now();
+// Herladen en animaties
+function updateWeapon(dt){
+ if(reloading){
+  reloadTimer-=dt;
+  if(reloadTimer<=0){
+   const w=weapons[selectedWeapon];
+   const amount=Math.min(w.capacity-w.ammo,w.reserve);
+   w.ammo+=amount;w.reserve-=amount;
+   reloading=false;
+   say("Wapen herladen.");
+   updateHUD();
+  }
+ }
+ if(recoil>0){
+  recoil=Math.max(0,recoil-dt*.5);
+  weaponRoot.position.y=-.45-recoil;
+  weaponRoot.rotation.x=-recoil*2;
+ }else{
+  weaponRoot.position.y=-.45;
+  weaponRoot.rotation.x=0;
+ }
+}
+
+// Loop
+let last=performance.now();
 engine.runRenderLoop(()=>{
-  const now=performance.now();
-  const dt=Math.min((now-lastTime)/1000,.04);
-  lastTime=now;
+ const now=performance.now();
+ const dt=Math.min((now-last)/1000,.04);
+ last=now;
 
-  updatePlayer(dt);
-  updateCar(dt);
-  updateTraffic(dt);
-  updateNPCs(dt);
-  checkNPCs(dt);
-  activatePolice();
-  updatePolice(dt);
-  updateMission();
-  updateRain(dt);
+ updatePlayer(dt);
+ updateCar(dt);
+ updateTraffic(dt);
+ updateNPCs(dt);
+ activatePolice();
+ updatePolice(dt);
+ updateMission();
+ updateRain(dt);
+ updateWeapon(dt);
 
-  missionMarker.rotation.y+=dt;
-  missionRing.rotation.y-=dt*.5;
+ missionMarker.rotation.y+=dt;
+ missionRing.rotation.y-=dt*.5;
 
-  if(weatherMode===1){
-    const t=target().position;
-    rain.forEach((drop,i)=>{
-      if(!drop.isEnabled())return;
-      if(i%3===0){
-        drop.position.x+=0;
-      }
-      if(drop.position.y<0){
-        drop.position.set(t.x-30+random()*60,20+random()*10,
-          t.z-30+random()*60);
-      }
-    });
-  }
-
-  if(messageTimer>0){
-    messageTimer-=dt;
-    if(messageTimer<=0)
-      document.getElementById("message").style.display="none";
-  }
-
-  camera.lockedTarget=target();
-  scene.render();
+ if(messageTimer>0){
+  messageTimer-=dt;
+  if(messageTimer<=0)
+   document.getElementById("message").style.display="none";
+ }
+ camera.lockedTarget=target();
+ scene.render();
 });
 
 window.addEventListener("resize",()=>engine.resize());
 updateHUD();
-say("Welkom in CITY CHAOS 0.4. Ontdek de stad!");
+say("Welkom in CITY CHAOS 0.5!");
 })();
 </script>
 </body>
