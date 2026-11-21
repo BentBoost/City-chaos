@@ -1,0 +1,5 @@
+// Belgische AZERTY-besturing
+if(keys.z)player.position.z+=speed; // Vooruit
+if(keys.s)player.position.z-=speed; // Achteruit
+if(keys.q)player.position.x-=speed; // Links
+if(keys.d)player.position.x+=speed; // Rechts
