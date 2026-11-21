@@ -3,95 +3,326 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CITY CHAOS</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>CITY CHAOS 0.2</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101722;color:white;font-family:Arial;overflow:hidden}
-#menu{position:fixed;inset:0;display:grid;place-items:center;text-align:center;background:radial-gradient(#34465c,#080b12)}
-h1{font-size:clamp(55px,12vw,110px);margin:15px}
-h1 span{color:#ff4035}
-button{background:#ed392f;color:white;border:0;padding:16px 28px;font-weight:bold;cursor:pointer}
-#game{display:none}
-canvas{display:block;width:100vw;height:100vh}
-#hud{position:fixed;top:18px;left:18px;right:18px;display:none;justify-content:space-between;pointer-events:none}
-#hud button{pointer-events:auto}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101722;color:white;font-family:Arial}
+#game{width:100%;height:100%;display:block;touch-action:none}
+#menu{position:fixed;inset:0;z-index:5;display:grid;place-items:center;text-align:center;background:radial-gradient(#34465c,#080b12)}
+h1{font-size:clamp(55px,12vw,110px);margin:15px;font-weight:1000}
+h1 span,.brand span{color:#ff4035}
+button{background:#ed392f;color:white;border:0;padding:14px 22px;font-weight:bold;cursor:pointer}
+#hud{display:none;position:fixed;inset:0;pointer-events:none}
+.brand{position:absolute;top:20px;left:20px;font-size:23px;font-weight:1000}
+.stats{position:absolute;top:65px;left:20px;font-size:13px;line-height:1.8}
+.mission{position:absolute;top:20px;right:20px;background:#080b12cc;padding:14px;font-size:12px}
+.controls{position:absolute;bottom:20px;left:20px;background:#080b12bb;padding:12px;font-size:11px}
+.actions{position:absolute;right:20px;bottom:20px;display:flex;gap:8px;pointer-events:auto}
+.actions button{font-size:11px}
+#wanted{color:#ff5148;font-weight:bold}
+#mobile{display:none;position:fixed;bottom:15px;left:15px;z-index:4}
+#mobile button{width:48px;height:48px;margin:3px;padding:0;background:#18263bd9;border:1px solid #ffffff55;border-radius:10px}
+@media(max-width:700px){
+ .controls{display:none}
+ .mission{top:115px;left:20px;right:auto}
+ .actions{right:12px;bottom:15px;flex-direction:column}
+ #mobile{display:block}
+}
 </style>
 </head>
 <body>
+
+<canvas id="game"></canvas>
+
 <div id="menu">
  <div>
   <p>OPEN WORLD ACTION GAME</p>
   <h1>CITY <span>CHAOS</span></h1>
   <p>YOUR CITY. YOUR RULES.</p>
-  <button onclick="startGame()">START GAME</button>
+  <button id="start">START GAME</button>
+  <p>VERSION 0.2 · AZERTY EDITION</p>
  </div>
 </div>
-<canvas id="game"></canvas>
+
 <div id="hud">
- <b>CITY <span style="color:red">CHAOS</span></b>
- <button onclick="location.reload()">MENU</button>
+ <div class="brand">CITY <span>CHAOS</span></div>
+ <div class="stats">
+  GELD: €<span id="money">500</span><br>
+  STATUS: <span id="status">TE VOET</span><br>
+  POLITIE: <span id="wanted">☆☆☆☆☆</span>
+ </div>
+ <div class="mission" id="mission">MISSIE: VERKEN DE STAD</div>
+ <div class="controls">
+  ZQSD: BEWEGEN · SHIFT: SPRINTEN · SPATIE: SPRINGEN<br>
+  E: AUTO IN/UIT · V: CAMERA WISSELEN
+ </div>
+ <div class="actions">
+  <button id="camera">CAMERA: DERDE PERSOON</button>
+  <button id="menuButton">MENU</button>
+ </div>
 </div>
+
+<div id="mobile">
+ <button data-key="z">Z ▲</button><br>
+ <button data-key="q">Q ◀</button>
+ <button data-key="s">S ▼</button>
+ <button data-key="d">D ▶</button><br>
+ <button data-key="e">AUTO E</button>
+ <button data-key="shift">SPRINT</button>
+</div>
+
 <script src="https://cdn.babylonjs.com/babylon.js"></script>
 <script>
-let engine,scene,player,camera,keys={};
-function startGame(){
- document.getElementById("menu").style.display="none";
- document.getElementById("hud").style.display="flex";
- const canvas=document.getElementById("game");
- engine=new BABYLON.Engine(canvas,true);
+(() => {
+const canvas=document.getElementById("game");
+const engine=new BABYLON.Engine(canvas,true);
+let scene,player,camera,car,police;
+let playing=false,inCar=false,firstPerson=false;
+let money=500,wanted=0,missionDone=false;
+let speed=0,carSpeed=0;
+const keys={};
+const traffic=[];
+const buildings=[];
+let playerYaw=0;
+
+const V=BABYLON.Vector3;
+
+function material(name,color){
+ const m=new BABYLON.StandardMaterial(name,scene);
+ m.diffuseColor=BABYLON.Color3.FromHexString(color);
+ return m;
+}
+
+function box(name,w,h,d,x,y,z,mat){
+ const b=BABYLON.MeshBuilder.CreateBox(name,{width:w,height:h,depth:d},scene);
+ b.position.set(x,y,z);
+ b.material=mat;
+ return b;
+}
+
+function createCar(name,color,x,z){
+ const body=box(name,2.1,.8,4,x,.8,z,material(name+"mat",color));
+ const roof=box(name+"roof",1.65,.7,1.9,x,1.45,z-.2,material(name+"roofmat","#252b35"));
+ roof.parent=body;
+ return body;
+}
+
+function createWorld(){
  scene=new BABYLON.Scene(engine);
- scene.clearColor=new BABYLON.Color4(.5,.7,.9,1);
- new BABYLON.HemisphericLight("light",new BABYLON.Vector3(0,1,0),scene);
- let ground=BABYLON.MeshBuilder.CreateGround("ground",{width:200,height:200},scene);
- let grass=new BABYLON.StandardMaterial("grass",scene);
- grass.diffuseColor=new BABYLON.Color3(.2,.35,.2);
+ scene.clearColor=new BABYLON.Color4(.48,.68,.88,1);
+
+ const light=new BABYLON.HemisphericLight("sky",new V(0,1,0),scene);
+ light.intensity=.9;
+ const sun=new BABYLON.DirectionalLight("sun",new V(-1,-2,-1),scene);
+ sun.intensity=.65;
+
+ const grass=material("grass","#405541");
+ const asphalt=material("asphalt","#292d33");
+ const line=material("line","#e4d9aa");
+
+ const ground=BABYLON.MeshBuilder.CreateGround("ground",{width:240,height:240},scene);
  ground.material=grass;
- let roadMat=new BABYLON.StandardMaterial("road",scene);
- roadMat.diffuseColor=new BABYLON.Color3(.12,.12,.14);
- let road=BABYLON.MeshBuilder.CreateBox("road",{width:18,height:.1,depth:200},scene);
- road.position.y=.05;road.material=roadMat;
- let cross=BABYLON.MeshBuilder.CreateBox("cross",{width:200,height:.1,depth:18},scene);
- cross.position.y=.05;cross.material=roadMat;
- for(let x=-80;x<=80;x+=25){
-  for(let z=-80;z<=80;z+=25){
-   if(Math.abs(x)<15||Math.abs(z)<15)continue;
-   let h=10+Math.random()*25;
-   let b=BABYLON.MeshBuilder.CreateBox("building",{width:14,height:h,depth:14},scene);
-   b.position.set(x,h/2,z);
-   let m=new BABYLON.StandardMaterial("buildingmat",scene);
-   m.diffuseColor=new BABYLON.Color3(.35+Math.random()*.2,.37+Math.random()*.2,.4+Math.random()*.2);
-   b.material=m;
+
+ const road=box("road",18,.12,240,0,.07,0,asphalt);
+ const cross=box("cross",240,.12,18,0,.07,0,asphalt);
+
+ for(let i=-110;i<110;i+=12){
+  box("dash",.2,.03,5,0,.15,i,line);
+  box("dash",5,.03,.2,i,.15,0,line);
+ }
+
+ const colors=["#59616b","#766b5d","#465563","#77766e","#53505c"];
+ for(let x=-96;x<=96;x+=24){
+  for(let z=-96;z<=96;z+=24){
+   if(Math.abs(x)<17||Math.abs(z)<17)continue;
+   const h=12+Math.random()*24;
+   const b=box("building",14,h,14,x,h/2,z,
+    material("buildingmat"+x+z,colors[Math.floor(Math.random()*colors.length)]));
+   buildings.push(b);
+   box("roof",14.3,.3,14.3,x,h+.15,z,material("roofmat"+x+z,"#343a43"));
   }
  }
- player=BABYLON.MeshBuilder.CreateCapsule("player",{height:2,radius:.4},scene);
- player.position.y=1;
- let pm=new BABYLON.StandardMaterial("playerMat",scene);
- pm.diffuseColor=new BABYLON.Color3(.1,.3,.9);
- player.material=pm;
- camera=new BABYLON.UniversalCamera("camera",new BABYLON.Vector3(0,5,-9),scene);
- camera.setTarget(player.position);
- camera.attachControl(canvas,true);
- window.onkeydown=e=>keys[e.key.toLowerCase()]=true;
- window.onkeyup=e=>keys[e.key.toLowerCase()]=false;
- scene.onBeforeRenderObservable.add(()=>{
-  let speed=keys.shift?0.3:.15;
- // Belgische AZERTY-besturing
-if(keys.z)player.position.z+=speed; // Vooruit
-if(keys.s)player.position.z-=speed; // Achteruit
-if(keys.q)player.position.x-=speed; // Links
-if(keys.d)player.position.x+=speed; // Rechtsif
-  (keys.w)player.position.z+=speed;
-if(keys.s)player.position.z-=speed;
-if(keys.a)player.position.x-=speed;
-if(keys.d)player.position.x+=speed;
-  camera.position.x=player.position.x;
-  camera.position.z=player.position.z-9;
-  camera.setTarget(player.position);
- });
- engine.runRenderLoop(()=>scene.render());
- window.addEventListener("resize",()=>engine.resize());
+
+ // Player
+ player=BABYLON.MeshBuilder.CreateCapsule("player",{height:2,radius:.42},scene);
+ player.position.set(0,1,0);
+ player.material=material("playerMat","#2765c9");
+
+ const head=BABYLON.MeshBuilder.CreateSphere("head",{diameter:.55},scene);
+ head.position.y=1.15;
+ head.parent=player;
+ head.material=material("skin","#c99572");
+
+ // Player car
+ car=createCar("playerCar","#bd3434",5,4);
+
+ // Traffic cars
+ for(let i=0;i<7;i++){
+  const t=createCar("traffic"+i,colors[i%colors.length],-8, -85+i*25);
+  t.metadata={direction:i%2===0?1:-1};
+  traffic.push(t);
+ }
+
+ // Police car
+ police=createCar("policeCar","#202c43",12,-25);
+ police.isVisible=false;
+
+ camera=new BABYLON.UniversalCamera("camera",new V(0,5,-9),scene);
+ camera.minZ=.1;
+ camera.fov=.85;
+
+ scene.onBeforeRenderObservable.add(update);
 }
+
+function update(){
+ if(!playing)return;
+ const dt=Math.min(engine.getDeltaTime()/1000,.05);
+
+ // Player walking
+ if(!inCar){
+  let forward=0,side=0;
+  if(keys.z)forward++;
+  if(keys.s)forward--;
+  if(keys.q)side--;
+  if(keys.d)side++;
+
+  const dir=new V(side,0,forward);
+  if(dir.lengthSquared()>0){
+   dir.normalize();
+   const run=keys.shift?10:5;
+   player.position.addInPlace(dir.scale(run*dt));
+   player.rotation.y=Math.atan2(dir.x,dir.z);
+  }
+
+  if(keys[" "] && player.position.y<=1.05){
+   player.position.y=2.1;
+  }
+  player.position.y=Math.max(1,player.position.y-12*dt);
+ }else{
+  // Driving
+  if(keys.z)carSpeed+=14*dt;
+  if(keys.s)carSpeed-=12*dt;
+  carSpeed*=.985;
+  carSpeed=Math.max(-9,Math.min(25,carSpeed));
+  if(keys.q)car.rotation.y-=dt*1.8*(Math.abs(carSpeed)/10+.3);
+  if(keys.d)car.rotation.y+=dt*1.8*(Math.abs(carSpeed)/10+.3);
+  const direction=new V(Math.sin(car.rotation.y),0,Math.cos(car.rotation.y));
+  car.position.addInPlace(direction.scale(carSpeed*dt));
+  player.position.copyFrom(car.position);
+  player.position.y=-10;
+  if(Math.abs(carSpeed)>17){
+   wanted=Math.max(wanted,1);
+  }
+ }
+
+ // Traffic moves along the main road
+ for(const t of traffic){
+  t.position.z+=t.metadata.direction*dt*7;
+  if(t.position.z>115)t.position.z=-115;
+  if(t.position.z< -115)t.position.z=115;
+ }
+
+ // Police chase
+ if(wanted>0){
+  police.isVisible=true;
+  const target=inCar?car.position:player.position;
+  const dx=target.x-police.position.x;
+  const dz=target.z-police.position.z;
+  const angle=Math.atan2(dx,dz);
+  police.rotation.y=angle;
+  police.position.x+=Math.sin(angle)*dt*(5+wanted*2);
+  police.position.z+=Math.cos(angle)*dt*(5+wanted*2);
+  if(BABYLON.Vector3.Distance(police.position,target)<5){
+   wanted=0;
+   police.isVisible=false;
+   document.getElementById("mission").textContent="POLITIE IS JE KWIJTGERAAKT";
+  }
+ }
+
+ // Camera
+ const target=inCar?car:player;
+ const yaw=target.rotation.y;
+ if(firstPerson){
+  camera.position=target.position.add(new V(0,inCar?1.1:0.7,0));
+  camera.setTarget(target.position.add(new V(Math.sin(yaw),.6,Math.cos(yaw))));
+ }else{
+  const desired=new V(
+   target.position.x-Math.sin(yaw)*9,
+   target.position.y+5,
+   target.position.z-Math.cos(yaw)*9
+  );
+  camera.position=BABYLON.Vector3.Lerp(camera.position,desired,.13);
+  camera.setTarget(target.position.add(new V(0,1,0)));
+ }
+
+ if(!missionDone && player.position.x>20){
+  missionDone=true;
+  money+=500;
+  document.getElementById("money").textContent=money;
+  document.getElementById("mission").textContent="MISSIE VOLTOOID! +€500";
+ }
+
+ document.getElementById("wanted").textContent="★".repeat(wanted)+"☆".repeat(5-wanted);
+ document.getElementById("status").textContent=inCar?"AUTO":"TE VOET";
+}
+
+function interact(){
+ if(!playing)return;
+ if(!inCar && BABYLON.Vector3.Distance(player.position,car.position)<5){
+  inCar=true;
+  player.position.y=-10;
+  carSpeed=0;
+ }else if(inCar){
+  inCar=false;
+  player.position.copyFrom(car.position);
+  player.position.x+=3;
+  player.position.y=1;
+  carSpeed=0;
+ }
+}
+
+function start(){
+ if(!scene)createWorld();
+ playing=true;
+ document.getElementById("menu").style.display="none";
+ document.getElementById("hud").style.display="block";
+ camera.attachControl(canvas,true);
+ engine.resize();
+}
+
+document.getElementById("start").onclick=start;
+document.getElementById("camera").onclick=()=>{
+ firstPerson=!firstPerson;
+ document.getElementById("camera").textContent=
+  firstPerson?"CAMERA: EERSTE PERSOON":"CAMERA: DERDE PERSOON";
+};
+document.getElementById("menuButton").onclick=()=>{
+ playing=false;
+ document.getElementById("hud").style.display="none";
+ document.getElementById("menu").style.display="grid";
+};
+
+window.addEventListener("keydown",e=>{
+ const k=e.key.toLowerCase();
+ keys[k]=true;
+ if(k==="e"&&!e.repeat)interact();
+ if(k==="v"&&!e.repeat)document.getElementById("camera").click();
+});
+window.addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+
+// Mobile touch buttons
+document.querySelectorAll("#mobile button").forEach(button=>{
+ const k=button.dataset.key;
+ button.addEventListener("pointerdown",e=>{e.preventDefault();keys[k]=true;});
+ button.addEventListener("pointerup",()=>keys[k]=false);
+ button.addEventListener("pointerleave",()=>keys[k]=false);
+ button.addEventListener("pointercancel",()=>keys[k]=false);
+});
+
+engine.runRenderLoop(()=>{if(scene)scene.render();});
+window.addEventListener("resize",()=>engine.resize());
+})();
 </script>
 </body>
 </html>
