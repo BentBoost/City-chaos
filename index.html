@@ -76,10 +76,15 @@ function startGame(){
  window.onkeyup=e=>keys[e.key.toLowerCase()]=false;
  scene.onBeforeRenderObservable.add(()=>{
   let speed=keys.shift?0.3:.15;
-  if(keys.w)player.position.z+=speed;
-  if(keys.s)player.position.z-=speed;
-  if(keys.a)player.position.x-=speed;
-  if(keys.d)player.position.x+=speed;
+ // Belgische AZERTY-besturing
+if(keys.z)player.position.z+=speed; // Vooruit
+if(keys.s)player.position.z-=speed; // Achteruit
+if(keys.q)player.position.x-=speed; // Links
+if(keys.d)player.position.x+=speed; // Rechtsif
+  (keys.w)player.position.z+=speed;
+if(keys.s)player.position.z-=speed;
+if(keys.a)player.position.x-=speed;
+if(keys.d)player.position.x+=speed;
   camera.position.x=player.position.x;
   camera.position.z=player.position.z-9;
   camera.setTarget(player.position);
