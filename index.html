@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITY CHAOS</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101722;color:white;font-family:Arial;overflow:hidden}
+#menu{position:fixed;inset:0;display:grid;place-items:center;text-align:center;background:radial-gradient(#34465c,#080b12)}
+h1{font-size:clamp(55px,12vw,110px);margin:15px}
+h1 span{color:#ff4035}
+button{background:#ed392f;color:white;border:0;padding:16px 28px;font-weight:bold;cursor:pointer}
+#game{display:none}
+canvas{display:block;width:100vw;height:100vh}
+#hud{position:fixed;top:18px;left:18px;right:18px;display:none;justify-content:space-between;pointer-events:none}
+#hud button{pointer-events:auto}
+</style>
+</head>
+<body>
+<div id="menu">
+ <div>
+  <p>OPEN WORLD ACTION GAME</p>
+  <h1>CITY <span>CHAOS</span></h1>
+  <p>YOUR CITY. YOUR RULES.</p>
+  <button onclick="startGame()">START GAME</button>
+ </div>
+</div>
+<canvas id="game"></canvas>
+<div id="hud">
+ <b>CITY <span style="color:red">CHAOS</span></b>
+ <button onclick="location.reload()">MENU</button>
+</div>
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
+<script>
+let engine,scene,player,camera,keys={};
+function startGame(){
+ document.getElementById("menu").style.display="none";
+ document.getElementById("hud").style.display="flex";
+ const canvas=document.getElementById("game");
+ engine=new BABYLON.Engine(canvas,true);
+ scene=new BABYLON.Scene(engine);
+ scene.clearColor=new BABYLON.Color4(.5,.7,.9,1);
+ new BABYLON.HemisphericLight("light",new BABYLON.Vector3(0,1,0),scene);
+ let ground=BABYLON.MeshBuilder.CreateGround("ground",{width:200,height:200},scene);
+ let grass=new BABYLON.StandardMaterial("grass",scene);
+ grass.diffuseColor=new BABYLON.Color3(.2,.35,.2);
+ ground.material=grass;
+ let roadMat=new BABYLON.StandardMaterial("road",scene);
+ roadMat.diffuseColor=new BABYLON.Color3(.12,.12,.14);
+ let road=BABYLON.MeshBuilder.CreateBox("road",{width:18,height:.1,depth:200},scene);
+ road.position.y=.05;road.material=roadMat;
+ let cross=BABYLON.MeshBuilder.CreateBox("cross",{width:200,height:.1,depth:18},scene);
+ cross.position.y=.05;cross.material=roadMat;
+ for(let x=-80;x<=80;x+=25){
+  for(let z=-80;z<=80;z+=25){
+   if(Math.abs(x)<15||Math.abs(z)<15)continue;
+   let h=10+Math.random()*25;
+   let b=BABYLON.MeshBuilder.CreateBox("building",{width:14,height:h,depth:14},scene);
+   b.position.set(x,h/2,z);
+   let m=new BABYLON.StandardMaterial("buildingmat",scene);
+   m.diffuseColor=new BABYLON.Color3(.35+Math.random()*.2,.37+Math.random()*.2,.4+Math.random()*.2);
+   b.material=m;
+  }
+ }
+ player=BABYLON.MeshBuilder.CreateCapsule("player",{height:2,radius:.4},scene);
+ player.position.y=1;
+ let pm=new BABYLON.StandardMaterial("playerMat",scene);
+ pm.diffuseColor=new BABYLON.Color3(.1,.3,.9);
+ player.material=pm;
+ camera=new BABYLON.UniversalCamera("camera",new BABYLON.Vector3(0,5,-9),scene);
+ camera.setTarget(player.position);
+ camera.attachControl(canvas,true);
+ window.onkeydown=e=>keys[e.key.toLowerCase()]=true;
+ window.onkeyup=e=>keys[e.key.toLowerCase()]=false;
+ scene.onBeforeRenderObservable.add(()=>{
+  let speed=keys.shift?0.3:.15;
+  if(keys.w)player.position.z+=speed;
+  if(keys.s)player.position.z-=speed;
+  if(keys.a)player.position.x-=speed;
+  if(keys.d)player.position.x+=speed;
+  camera.position.x=player.position.x;
+  camera.position.z=player.position.z-9;
+  camera.setTarget(player.position);
+ });
+ engine.runRenderLoop(()=>scene.render());
+ window.addEventListener("resize",()=>engine.resize());
+}
+</script>
+</body>
+</html>
