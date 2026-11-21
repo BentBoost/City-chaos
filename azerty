@@ -1,0 +1,4 @@
+if(keys.w)player.position.z+=speed;
+if(keys.s)player.position.z-=speed;
+if(keys.a)player.position.x-=speed;
+if(keys.d)player.position.x+=speed;
