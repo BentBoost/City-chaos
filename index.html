@@ -108,7 +108,8 @@ font-size:22px;color:#fff;pointer-events:none;z-index:4}
 const canvas=document.getElementById("game");
 const engine=new BABYLON.Engine(canvas,true);
 const scene=new BABYLON.Scene(engine);
-  let loadedCharacters = [];
+
+let loadedCharacters = [];
 
 document.getElementById("character-files").addEventListener("change", async function(event) {
     const files = Array.from(event.target.files);
