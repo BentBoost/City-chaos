@@ -284,7 +284,137 @@ for(let i=0;i<5;i++){
 const player = BABYLON.MeshBuilder.CreateCapsule(
  "player",{height:2,radius:.45},scene
 );
-player.position.set(0,1,0);
+player.position
+// =====================================
+// CITY CHAOS - TRAVER SHADOW
+// Jouw vaste bondgenoot
+// =====================================
+
+let traverShadow = null;
+let traverFollowing = true;
+
+function createTraverShadow(scene) {
+    const root = new BABYLON.TransformNode("TraverShadow", scene);
+
+    // Lichaam
+    const body = BABYLON.MeshBuilder.CreateCapsule(
+        "TraverBody",
+        { height: 1.4, radius: 0.32 },
+        scene
+    );
+    body.parent = root;
+    body.position.y = 1.05;
+
+    const hoodie = new BABYLON.StandardMaterial(
+        "TraverHoodie",
+        scene
+    );
+    hoodie.diffuseColor = new BABYLON.Color3(0.025, 0.025, 0.035);
+    body.material = hoodie;
+
+    // Hoofd
+    const head = BABYLON.MeshBuilder.CreateSphere(
+        "TraverHead",
+        { diameter: 0.55 },
+        scene
+    );
+    head.parent = root;
+    head.position.y = 2.05;
+
+    const skin = new BABYLON.StandardMaterial(
+        "TraverSkin",
+        scene
+    );
+    skin.diffuseColor = new BABYLON.Color3(0.65, 0.43, 0.30);
+    head.material = skin;
+
+    // Donkere broek
+    for (let i = 0; i < 2; i++) {
+        const leg = BABYLON.MeshBuilder.CreateBox(
+            "TraverLeg" + i,
+            { width: 0.22, height: 0.85, depth: 0.25 },
+            scene
+        );
+        leg.parent = root;
+        leg.position.set(i === 0 ? -0.16 : 0.16, 0.43, 0);
+        leg.material = hoodie;
+    }
+
+    // Naam boven hoofd
+    const name = BABYLON.MeshBuilder.CreatePlane(
+        "TraverName",
+        { width: 2.2, height: 0.35 },
+        scene
+    );
+    name.parent = root;
+    name.position.y = 2.65;
+
+    const texture = new BABYLON.DynamicTexture(
+        "TraverNameTexture",
+        { width: 512, height: 128 },
+        scene
+    );
+
+    texture.drawText(
+        "TRAVER SHADOW",
+        null, 90, "bold 48px Arial",
+        "#ffffff", "transparent", true
+    );
+
+    const nameMaterial = new BABYLON.StandardMaterial(
+        "TraverNameMaterial",
+        scene
+    );
+    nameMaterial.diffuseTexture = texture;
+    nameMaterial.emissiveColor = BABYLON.Color3.White();
+    nameMaterial.backFaceCulling = false;
+    name.material = nameMaterial;
+
+    return root;
+}
+
+// Maak Traver
+traverShadow = createTraverShadow(scene);
+
+// Plaats hem bij de speler
+traverShadow.position = player.position.add(
+    new BABYLON.Vector3(2, 0, 2)
+);
+
+// Volgfunctie
+scene.onBeforeRenderObservable.add(() => {
+    if (!traverShadow || !player || !traverFollowing) return;
+
+    const target = player.position.add(
+        new BABYLON.Vector3(2, 0, 2)
+    );
+
+    const distance = BABYLON.Vector3.Distance(
+        traverShadow.position,
+        target
+    );
+
+    if (distance > 2.5) {
+        traverShadow.position = BABYLON.Vector3.Lerp(
+            traverShadow.position,
+            target,
+            0.025
+        );
+    }
+});
+
+// G = Traver laten volgen of stoppen
+window.addEventListener("keydown", (event) => {
+    if (event.key.toLowerCase() === "g") {
+        traverFollowing = !traverFollowing;
+        console.log(
+            traverFollowing
+                ? "Traver volgt je!"
+                : "Traver blijft staan!"
+        );
+    }
+});
+.set(0,1,0);
 player.material=playerMat;
 camera.lockedTarget=player;
 
