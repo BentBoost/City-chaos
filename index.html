@@ -108,6 +108,49 @@ font-size:22px;color:#fff;pointer-events:none;z-index:4}
 const canvas=document.getElementById("game");
 const engine=new BABYLON.Engine(canvas,true);
 const scene=new BABYLON.Scene(engine);
+  let loadedCharacters = [];
+
+document.getElementById("character-files").addEventListener("change", async function(event) {
+    const files = Array.from(event.target.files);
+    const status = document.getElementById("loader-status");
+
+    if (files.length === 0) return;
+
+    status.textContent = "3D-personages laden...";
+
+    for (const file of files) {
+        if (!file.name.toLowerCase().endsWith(".glb") &&
+            !file.name.toLowerCase().endsWith(".gltf")) continue;
+
+        const url = URL.createObjectURL(file);
+
+        try {
+            const result = await BABYLON.SceneLoader.ImportMeshAsync(
+                "",
+                "",
+                url,
+                scene
+            );
+
+            const root = new BABYLON.TransformNode(
+                "character_" + file.name,
+                scene
+            );
+
+            result.meshes.forEach(mesh => {
+                if (!mesh.parent && mesh !== scene.meshes[0]) {
+                    mesh.parent = root;
+                }
+            });
+
+            loadedCharacters.push(root);
+        } catch (error) {
+            console.error("Fout bij laden:", file.name, error);
+        }
+    }
+
+    status.textContent = loadedCharacters.length + " personage(s) geladen!";
+});
 scene.clearColor=new BABYLON.Color4(.012,.012,.025,1);
 scene.fogMode=BABYLON.Scene.FOGMODE_EXP2;
 scene.fogDensity=.006;
