@@ -379,7 +379,7 @@ function toggleCar(){
 function updateCar(dt){
   if(!inCar) return;
 
-  if(keys["w"]) carSpeed = Math.min(carSpeed+0.004*dt,0.35);
+  if(keys["z"]) carSpeed = Math.min(carSpeed+0.004*dt,0.35);
   else if(keys["s"]) carSpeed = Math.max(carSpeed-0.004*dt,-0.15);
   else carSpeed *= 0.985;
 
@@ -387,7 +387,7 @@ function updateCar(dt){
 
   if(Math.abs(carSpeed)>0.002){
     const turn = 0.035*(carSpeed>0?1:-1);
-    if(keys["a"]) car.rotation.y -= turn*dt/16;
+    if(keys["q"]) car.rotation.y -= turn*dt/16;
     if(keys["d"]) car.rotation.y += turn*dt/16;
   }
 
