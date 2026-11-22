@@ -4,7 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CITY CHAOS</title>
+
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
 <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111;color:white;font-family:Arial,sans-serif}
@@ -24,6 +27,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111;color:
 </style>
 </head>
 <body>
+
 <canvas id="game"></canvas>
 
 <div id="loader">
@@ -37,14 +41,14 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111;color:
   <div>Geld: $<span id="money">500</span></div>
   <div>Wanted: <span id="wanted">☆☆☆☆☆</span></div>
   <div id="status">Te voet</div>
-  <div id="mission">Missie: Vind de rode marker</div>
+  <div id="mission">Missie: Vind de gele marker</div>
 </div>
 
 <div id="message"></div>
 
 <div id="help">
-  **BESTURING**<br>
-  W A S D = Bewegen / rijden<br>
+  <b>BESTURING</b><br>
+  Z Q S D = Bewegen / rijden<br>
   E = Auto instappen / uitstappen<br>
   Shift = Sprinten<br>
   Spatie = Remmen tijdens rijden<br>
@@ -83,17 +87,21 @@ function material(name,color){
   m.diffuseColor = BABYLON.Color3.FromHexString(color);
   return m;
 }
+
 const roadMat = material("road","#292b30");
 const pavementMat = material("pavement","#888888");
 const grassMat = material("grass","#477442");
+
 const buildingMats = [
   material("building1","#8a8d94"),
   material("building2","#b1a18d"),
   material("building3","#777e88"),
   material("building4","#b5b7b9")
 ];
+
 const playerMat = material("player","#222222");
 const skinMat = material("skin","#d9a47c");
+
 const carMats = [
   material("red","#c52222"),
   material("blue","#174eaa"),
@@ -117,8 +125,6 @@ const ground = BABYLON.MeshBuilder.CreateGround("ground",{width:500,height:500},
 ground.material = grassMat;
 ground.checkCollisions = true;
 
-const city = new BABYLON.TransformNode("city",scene);
-
 function makeBuilding(x,z,w,d,h){
   const b = BABYLON.MeshBuilder.CreateBox("building",{width:w,depth:d,height:h},scene);
   b.position.set(x,h/2,z);
@@ -128,7 +134,6 @@ function makeBuilding(x,z,w,d,h){
   const roof = BABYLON.MeshBuilder.CreateBox("roof",{width:w+0.3,depth:d+0.3,height:0.4},scene);
   roof.position.set(x,h+0.2,z);
   roof.material = material("roof"+Math.random(),"#44464b");
-  roof.checkCollisions = true;
 
   for(let y=3;y<h-1;y+=3){
     for(let xx=-w/2+1;xx<w/2-0.5;xx+=3){
@@ -147,11 +152,12 @@ for(let x=-100;x<=100;x+=30){
 }
 
 /* WEGEN */
-function makeRoad(x,z,width,height){
-  const r = BABYLON.MeshBuilder.CreateBox("road",{width,height:0.12,depth:height},scene);
+function makeRoad(x,z,width,depth){
+  const r = BABYLON.MeshBuilder.CreateBox("road",{width:width,height:0.12,depth:depth},scene);
   r.position.set(x,0.06,z);
   r.material = roadMat;
 }
+
 for(let i=-120;i<=120;i+=30){
   makeRoad(i,0,12,260);
   makeRoad(0,i,260,12);
@@ -168,6 +174,7 @@ for(let x=-120;x<=120;x+=30){
 
 /* SPELER */
 const player = new BABYLON.TransformNode("player",scene);
+
 const body = BABYLON.MeshBuilder.CreateCapsule("playerBody",{height:1.8,radius:0.35},scene);
 body.parent = player;
 body.position.y = 0.9;
@@ -183,14 +190,17 @@ camera.lockedTarget = player;
 
 /* TRAVER SHADOW */
 const traver = new BABYLON.TransformNode("traverShadow",scene);
+
 const traverBody = BABYLON.MeshBuilder.CreateCapsule("traverBody",{height:1.8,radius:0.35},scene);
 traverBody.parent = traver;
 traverBody.position.y = 0.9;
 traverBody.material = material("traverClothes","#080808");
+
 const traverHead = BABYLON.MeshBuilder.CreateSphere("traverHead",{diameter:0.55},scene);
 traverHead.parent = traver;
 traverHead.position.y = 1.95;
 traverHead.material = skinMat;
+
 traver.position.set(3,0,3);
 
 /* AUTO'S */
@@ -209,6 +219,7 @@ function makeCar(x,z,color){
   top.material = material("glass"+Math.random(),"#477080");
 
   const wheels = [];
+
   for(const xx of [-1.1,1.1]){
     for(const zz of [-1.35,1.35]){
       const wheel = BABYLON.MeshBuilder.CreateCylinder("wheel",{diameter:0.75,height:0.25,tessellation:16},scene);
@@ -219,12 +230,15 @@ function makeCar(x,z,color){
       wheels.push(wheel);
     }
   }
+
   root.metadata = {wheels:wheels,speed:0,occupied:false};
   return root;
 }
 
 const car = makeCar(0,8,carMats[0]);
+
 const traffic = [];
+
 for(let i=0;i<12;i++){
   const c = makeCar(-60+Math.random()*120,-80+Math.random()*160,carMats[i%carMats.length]);
   c.metadata.speed = 0.04+Math.random()*0.05;
@@ -233,15 +247,14 @@ for(let i=0;i<12;i++){
 
 /* POLITIE */
 const policeCars = [];
+
 for(let i=0;i<4;i++){
   const p = makeCar(80+i*5,80,carMats[2]);
-  p.isVisible = false;
+  p.setEnabled(false);
   policeCars.push(p);
 }
 
 /* NPC'S */
-
-/* ECHTE 3D STRAATMENSEN */
 const npcs = [];
 
 const npcNames = [
@@ -282,15 +295,17 @@ async function makeNPC(x,z,index){
     model.parent = npc;
     model.scaling.setAll(1);
     model.position.y = 0;
-
     npc.metadata.model = model;
+
   } catch(error) {
     console.error("NPC model kon niet geladen worden:",error);
+
     const fallback = BABYLON.MeshBuilder.CreateCapsule(
       "npcFallback_"+index,
       {height:1.7,radius:0.32},
       scene
     );
+
     fallback.parent = npc;
     fallback.position.y = 0.85;
     fallback.material = playerMat;
@@ -299,14 +314,7 @@ async function makeNPC(x,z,index){
   npcs.push(npc);
 }
 
-for(let i=0;i<20;i++){
-  makeNPC(
-    -50+Math.random()*100,
-    -50+Math.random()*100,
-    i
-  );
-}
-
+/* 20 NPC'S */
 for(let i=0;i<20;i++){
   makeNPC(-50+Math.random()*100,-50+Math.random()*100,i);
 }
@@ -333,16 +341,18 @@ function updateHUD(){
   document.getElementById("money").textContent = money;
   document.getElementById("wanted").textContent = "★".repeat(wanted)+"☆".repeat(5-wanted);
   document.getElementById("status").textContent = inCar ? "In auto" : "Te voet";
-  document.getElementById("mission").textContent = missionDone ? "Missie voltooid!" : missionActive ? "Missie: Bereik de gele marker" : "Missie: Vind de rode marker";
+  document.getElementById("mission").textContent = missionDone ? "Missie voltooid!" : missionActive ? "Missie: Bereik de gele marker" : "Missie: Vind de gele marker";
 }
 
 /* BESTURING */
 const keys = {};
+
 window.addEventListener("keydown",e=>{
   keys[e.key.toLowerCase()] = true;
   if(e.key.toLowerCase()==="e") toggleCar();
   if(e.key.toLowerCase()==="f") startMission();
 });
+
 window.addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
 
 let inCar = false;
@@ -406,14 +416,16 @@ function updatePlayer(dt){
   let speed = keys["shift"] ? 0.15 : 0.075;
   let dx = 0, dz = 0;
 
-  if(keys["w"]) dz += 1;
+  if(keys["z"]) dz += 1;
   if(keys["s"]) dz -= 1;
-  if(keys["a"]) dx -= 1;
+  if(keys["q"]) dx -= 1;
   if(keys["d"]) dx += 1;
 
   if(dx!==0 || dz!==0){
     const len = Math.sqrt(dx*dx+dz*dz);
-    dx /= len; dz /= len;
+    dx /= len;
+    dz /= len;
+
     player.position.x += dx*speed*dt/16;
     player.position.z += dz*speed*dt/16;
     player.rotation.y = Math.atan2(dx,dz);
@@ -438,7 +450,6 @@ function updateNPCs(dt){
 /* NPC'S KUNNEN JE AUTO STELEN */
 function updateCarjacking(dt){
   if(carjackCooldown>0) carjackCooldown -= dt;
-
   if(!inCar || carjackerDriving || carjackCooldown>0) return;
 
   if(!carjackTarget){
@@ -447,7 +458,9 @@ function updateCarjacking(dt){
 
     for(const npc of npcs){
       if(!npc.metadata.active || npc.metadata.carjacker) continue;
+
       const distance = BABYLON.Vector3.Distance(npc.position,car.position);
+
       if(distance<closestDistance){
         closestDistance = distance;
         closest = npc;
@@ -477,6 +490,7 @@ function updateCarjacking(dt){
 
   const direction = car.position.subtract(carjackTarget.position);
   direction.y = 0;
+
   if(direction.length()>0.1){
     direction.normalize();
     carjackTarget.position.addInPlace(direction.scale(0.045*dt));
@@ -487,13 +501,11 @@ function updateCarjacking(dt){
     carjackTimer += dt;
 
     if(carjackTimer>1800){
-      /* De speler wordt uit de auto gehaald */
       inCar = false;
       player.setEnabled(true);
       player.position.set(car.position.x+2.5,0,car.position.z);
       carSpeed = 0;
 
-      /* NPC neemt de bestuurdersplaats in */
       carjackTarget.metadata.carjacker = true;
       carjackTarget.setEnabled(false);
       carjackTarget = null;
@@ -540,13 +552,16 @@ function startMission(){
     showMessage("Je hebt deze missie al voltooid!");
     return;
   }
+
   missionActive = true;
   showMessage("Missie gestart: bereik de gele marker!");
 }
 
 function updateMission(){
   if(!missionActive || missionDone) return;
+
   const position = inCar ? car.position : player.position;
+
   if(BABYLON.Vector3.Distance(position,missionMarker.position)<4){
     missionDone = true;
     missionActive = false;
@@ -564,7 +579,6 @@ function updatePolice(dt){
 
     if(wanted>0){
       p.setEnabled(true);
-      p.isVisible = true;
 
       const target = inCar ? car.position : player.position;
       const direction = target.subtract(p.position);
@@ -602,6 +616,7 @@ function updateTraver(dt){
     const direction = target.subtract(traver.position);
     direction.y = 0;
     direction.normalize();
+
     traver.position.addInPlace(direction.scale(0.045*dt));
     traver.rotation.y = Math.atan2(direction.x,direction.z);
   }
@@ -610,14 +625,25 @@ function updateTraver(dt){
 /* MOBIELE KNOPPEN */
 function holdButton(id,key){
   const button = document.getElementById(id);
-  button.addEventListener("touchstart",e=>{e.preventDefault();keys[key]=true;});
-  button.addEventListener("touchend",e=>{e.preventDefault();keys[key]=false;});
+
+  button.addEventListener("touchstart",e=>{
+    e.preventDefault();
+    keys[key]=true;
+  });
+
+  button.addEventListener("touchend",e=>{
+    e.preventDefault();
+    keys[key]=false;
+  });
+
   button.addEventListener("touchcancel",()=>keys[key]=false);
 }
-holdButton("up","w");
+
+holdButton("up","z");
 holdButton("down","s");
-holdButton("left","a");
+holdButton("left","q");
 holdButton("right","d");
+
 document.getElementById("enter").addEventListener("click",toggleCar);
 
 /* GAME LOOP */
@@ -638,12 +664,7 @@ engine.runRenderLoop(()=>{
     updateMission();
     updateTraver(dt);
 
-    if(inCar){
-      camera.lockedTarget = car;
-    }else{
-      camera.lockedTarget = player;
-    }
-
+    camera.lockedTarget = inCar ? car : player;
     updateHUD();
   }
 
@@ -651,7 +672,6 @@ engine.runRenderLoop(()=>{
 });
 
 window.addEventListener("resize",()=>engine.resize());
-
 updateHUD();
 </script>
 </body>
