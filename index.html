@@ -97,7 +97,39 @@ font-size:22px;color:#fff;pointer-events:none;z-index:4}
 </div>
 
 <div id="mobile">
+ <div id="mobile">
   <button id="fireBtn">VUUR</button>
+  <button id="reloadBtn">HERLADEN</button>
+  <button id="shopBtn">WINKEL</button>
+</div>
+
+<!-- HIER KOMT JE CHARACTER LOADER -->
+<div id="character-loader" style="
+position:fixed;
+inset:0;
+z-index:9999;
+background:#101820;
+color:white;
+font-family:Arial,sans-serif;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+text-align:center;
+padding:20px;
+">
+  <h1>CITY CHAOS</h1>
+  <h2>3D CHARACTER LOADER</h2>
+  <p>Laad je 3D-personages (.glb) in de game.</p>
+  <input id="character-files" type="file" accept=".glb,.gltf" multiple>
+  <p id="loader-status">Nog geen personages geladen.</p>
+  <button onclick="document.getElementById('character-loader').style.display='none'"
+  style="padding:12px 22px;background:#00c853;color:white;border:0;border-radius:8px;font-size:16px;">
+    TERUG NAAR CITY CHAOS
+  </button>
+</div>
+
+<script src="https://cdn.babylonjs.com/babylon.js"></script> <button id="fireBtn">VUUR</button>
   <button id="reloadBtn">HERLADEN</button>
   <button id="shopBtn">WINKEL</button>
 </div>
