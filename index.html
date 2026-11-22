@@ -240,7 +240,10 @@ for(let i=0;i<4;i++){
 }
 
 /* NPC'S */
+
+/* ECHTE 3D STRAATMENSEN */
 const npcs = [];
+
 const npcNames = [
   "Jayden","Malik","Tyson","Kairo","Zay",
   "Leon","Chris","Denzel","Amir","Jax",
@@ -248,28 +251,60 @@ const npcNames = [
   "Enzo","Alex","Omar","Zion","Bruno"
 ];
 
-function makeNPC(x,z,index){
+async function makeNPC(x,z,index){
   const npc = new BABYLON.TransformNode("npc_"+index,scene);
-  const npcBody = BABYLON.MeshBuilder.CreateCapsule("npcBody",{height:1.7,radius:0.32},scene);
-  npcBody.parent = npc;
-  npcBody.position.y = 0.85;
-  npcBody.material = material("npcMat"+index,["#8d2525","#343b89","#28733b","#7a398e"][index%4]);
-
-  const npcHead = BABYLON.MeshBuilder.CreateSphere("npcHead",{diameter:0.5},scene);
-  npcHead.parent = npc;
-  npcHead.position.y = 1.8;
-  npcHead.material = skinMat;
-
   npc.position.set(x,0,z);
-  npc.rotation.y = Math.random()*Math.PI*2;
+
   npc.metadata = {
-    name:npcNames[index%npcNames.length],
+    name:npcNames[index],
     active:true,
     speed:0.015+Math.random()*0.015,
     direction:Math.random()*Math.PI*2,
     carjacker:false
   };
+
+  try {
+    const result = await BABYLON.SceneLoader.ImportMeshAsync(
+      "",
+      "./models/",
+      "The_Gangster.glb",
+      scene
+    );
+
+    const model = new BABYLON.TransformNode("npcModel_"+index,scene);
+
+    for(const mesh of result.meshes){
+      if(mesh.parent === null){
+        mesh.parent = model;
+      }
+    }
+
+    model.parent = npc;
+    model.scaling.setAll(1);
+    model.position.y = 0;
+
+    npc.metadata.model = model;
+  } catch(error) {
+    console.error("NPC model kon niet geladen worden:",error);
+    const fallback = BABYLON.MeshBuilder.CreateCapsule(
+      "npcFallback_"+index,
+      {height:1.7,radius:0.32},
+      scene
+    );
+    fallback.parent = npc;
+    fallback.position.y = 0.85;
+    fallback.material = playerMat;
+  }
+
   npcs.push(npc);
+}
+
+for(let i=0;i<20;i++){
+  makeNPC(
+    -50+Math.random()*100,
+    -50+Math.random()*100,
+    i
+  );
 }
 
 for(let i=0;i<20;i++){
